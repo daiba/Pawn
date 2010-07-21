@@ -44,11 +44,11 @@ sub load_file {
     my $self = shift;
     return unless $self->{file} && -e $self->{file};
     my $file   = $self->{file};
-    my @attr   = qw( name hosts command eachTime endTime );
-    my $plugin = { file => $file };
+    my @attr   = qw( hosts command eachTime endTime );
+    my $config = { file => $file };
 
     my $dsl = join "\n",
-      map "sub $_ {my \$e=shift || return \$plugin->{$_}; \$plugin->{$_}=\$e }",
+      map "sub $_ {my \$e=shift || return \$config->{$_}; \$config->{$_}=\$e }",
       @attr;
     my $code = do { open my $io, "<$file"; local $/; <$io> };
 
