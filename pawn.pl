@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 package App::Pawn::script;
+use Term::ReadLine;
 use Getopt::Long;
 use strict;
 
@@ -20,6 +21,7 @@ sub parse_options {
     Getopt::Long::GetOptions(
         'f|file=s' => \$self->{file},
         't|test'   => \$self->{test},
+        's|shell'  => \$self->{shell},
         'h|help'   => sub { $self->help },
     );
     $self->{argv} = \@ARGV;
@@ -33,6 +35,7 @@ Usage: pawn [options] File
 Optons:
   -h,--help       this message
   -f,--file       specify rules directory
+  -s,--shell      simple shell
   -t,--test       test mode (send no mail)
 HELP
 }
@@ -57,18 +60,40 @@ sub loop {
     my $self = shift;
     my @hosts = split /\s+/, App::Pawn::Rule::hosts();
     my %ret;
-    for my $host (@hosts) {
-        next unless ($host);
-        my $fd;
-        my $command = App::Pawn::Rule::command();
-        open $fd, '-|', "ssh $host $command 2> /dev/null";
-        my $output;
-        {
-            local $/ = undef;
-            $output = <$fd>;
+
+    if ( $self->{shell} ) {
+        my $term = Term::ReadLine->new('Rook');
+        my $out = $term->OUT || \*STDOUT;
+        while ( defined( my $line = $term->readline('Rook> ') ) ) {
+            next if $line =~ /^\s*$/;
+            for my $host (@hosts) {
+                next unless ($host);
+                my $fd;
+                open $fd, '-|', "ssh $host $line 2> /dev/null";
+                my $output;
+                {
+                    local $/ = undef;
+                    $output = <$fd>;
+                }
+                close $fd;
+                print $out $output;
+            }
         }
-        $ret{$host} = App::Pawn::Rule::eachTime()->($output);
-        close $fd;
+    }
+    else {
+        for my $host (@hosts) {
+            next unless ($host);
+            my $fd;
+            my $command = App::Pawn::Rule::command();
+            open $fd, '-|', "ssh $host $command 2> /dev/null";
+            my $output;
+            {
+                local $/ = undef;
+                $output = <$fd>;
+            }
+            $ret{$host} = App::Pawn::Rule::eachTime()->($output);
+            close $fd;
+        }
     }
     App::Pawn::Rule::endTime()->( \%ret );
 }
