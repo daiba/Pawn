@@ -78,9 +78,9 @@ sub loop {
 sub shell {
     my $self  = shift;
     my @hosts = split /\s+/, App::Pawn::Rule::hosts();
-    my $term  = Term::ReadLine->new('Rook');
+    my $term  = Term::ReadLine->new('Pawn');
     my $out   = $term->OUT || \*STDOUT;
-    while ( defined( my $line = $term->readline('Rook> ') ) ) {
+    while ( defined( my $line = $term->readline('Pawn> ') ) ) {
         next if $line =~ /^\s*$/;
         for my $host (@hosts) {
             next unless ($host);
@@ -92,7 +92,7 @@ sub shell {
                 $output = <$fd>;
             }
             close $fd;
-            print $out $output;
+            printf $out "%s> %s", $host, $output;
         }
     }
 }
