@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 package App::Pawn::script;
-use Term::ReadLine;
 use Getopt::Long;
+use Term::ReadLine;
 use strict;
 
 sub new {
@@ -50,9 +50,18 @@ sub load_file {
     my $dsl = join "\n",
       map "sub $_ {my \$e=shift || return \$config->{$_}; \$config->{$_}=\$e }",
       @attr;
-    my $code = do { open my $io, "<$file"; local $/; <$io> };
+    $dsl .= <<DSL;
 
-    eval "package App::Pawn::Rule;\n" . "use strict;\nuse utf8;\n$dsl\n$code";
+sub include {
+    my \$b = shift || return;
+    my \$f = dirname(\$self->{file}) . '/' . \$b;
+    unless ( do \$f ) { die "can't include \$f\\n" }
+}
+DSL
+
+    my $code = do { open my $io, "<", $file; local $/; <$io> };
+    eval "package App::Pawn::Rule;\n"
+      . "use File::Basename;\nuse strict;\nuse utf8;\n$dsl\n$code";
     die $@ if ($@);
 }
 
