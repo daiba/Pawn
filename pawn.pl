@@ -28,7 +28,7 @@ sub parse_options {
 sub help {
     my $self = shift;
     print <<HELP;
-Usage: pawn [options] File
+Usage: pawn.pl [options] File
 
 Optons:
   -h,--help       this message
