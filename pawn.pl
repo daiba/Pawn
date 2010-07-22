@@ -84,15 +84,18 @@ sub loop {
         for my $host (@hosts) {
             next unless ($host);
             my $fd;
-            my $command = App::Pawn::Rule::command();
-            open $fd, '-|', "ssh $host $command 2> /dev/null";
-            my $output;
-            {
-                local $/ = undef;
-                $output = <$fd>;
+            my @commands = split /\s+/, App::Pawn::Rule::command();
+            for my $command (@commands) {
+                next unless ($command);
+                open $fd, '-|', "ssh $host $command 2> /dev/null";
+                my $output;
+                {
+                    local $/ = undef;
+                    $output = <$fd>;
+                }
+                $ret{$host} = App::Pawn::Rule::eachTime()->($output);
+                close $fd;
             }
-            $ret{$host} = App::Pawn::Rule::eachTime()->($output);
-            close $fd;
         }
     }
     App::Pawn::Rule::endTime()->( \%ret );
