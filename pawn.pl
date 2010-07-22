@@ -19,31 +19,26 @@ sub parse_options {
 
     Getopt::Long::Configure("bundling");
     Getopt::Long::GetOptions(
-        'f|file=s' => \$self->{file},
-        't|test'   => \$self->{test},
         's|shell'  => \$self->{shell},
-        'h|help'   => sub { $self->help },
+        'h|help'   => sub { $self->help; exit },
     );
     $self->{argv} = \@ARGV;
 }
 
 sub help {
     my $self = shift;
-    die <<HELP;
+    print <<HELP;
 Usage: pawn [options] File
 
 Optons:
   -h,--help       this message
-  -f,--file       specify rules directory
   -s,--shell      simple shell
-  -t,--test       test mode (send no mail)
 HELP
 }
 
 sub load_file {
     my $self = shift;
-    return unless $self->{file} && -e $self->{file};
-    my $file   = $self->{file};
+    my $file   = shift @{$self->{argv}};
     my @attr   = qw( hosts commands );
     my $config = { file => $file };
 
