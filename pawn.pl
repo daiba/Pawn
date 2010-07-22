@@ -44,7 +44,7 @@ sub load_file {
     my $self = shift;
     return unless $self->{file} && -e $self->{file};
     my $file   = $self->{file};
-    my @attr   = qw( hosts command eachTime endTime );
+    my @attr   = qw( hosts commands );
     my $config = { file => $file };
 
     my $dsl = join "\n",
@@ -95,20 +95,20 @@ sub exec {
     for my $host (@hosts) {
         next unless ($host);
         my $fd;
-        my @commands = split /\s+/, App::Pawn::Rule::command();
-        for my $command (@commands) {
-            next unless ($command);
-            open $fd, '-|', "ssh $host $command 2> /dev/null";
+        my @doChecks = App::Pawn::Rule::commands()->();
+        for my $doCheck (@doChecks) {
+            my $do    = $$doCheck[0];
+            my $check = $$doCheck[1];
+            open $fd, '-|', "ssh $host $do 2> /dev/null";
             my $output;
             {
                 local $/ = undef;
                 $output = <$fd>;
             }
-            $ret{$host} = App::Pawn::Rule::eachTime()->($output);
+            $check->($output);
             close $fd;
         }
     }
-    App::Pawn::Rule::endTime()->( \%ret );
 }
 
 sub doit {
