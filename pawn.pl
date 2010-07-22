@@ -58,44 +58,54 @@ sub load_file {
 
 sub loop {
     my $self = shift;
-    my @hosts = split /\s+/, App::Pawn::Rule::hosts();
-    my %ret;
-
     if ( $self->{shell} ) {
-        my $term = Term::ReadLine->new('Rook');
-        my $out = $term->OUT || \*STDOUT;
-        while ( defined( my $line = $term->readline('Rook> ') ) ) {
-            next if $line =~ /^\s*$/;
-            for my $host (@hosts) {
-                next unless ($host);
-                my $fd;
-                open $fd, '-|', "ssh $host $line 2> /dev/null";
-                my $output;
-                {
-                    local $/ = undef;
-                    $output = <$fd>;
-                }
-                close $fd;
-                print $out $output;
-            }
-        }
+        $self->shell;
     }
     else {
+        $self->exec;
+    }
+}
+
+sub shell {
+    my $self  = shift;
+    my @hosts = split /\s+/, App::Pawn::Rule::hosts();
+    my $term  = Term::ReadLine->new('Rook');
+    my $out   = $term->OUT || \*STDOUT;
+    while ( defined( my $line = $term->readline('Rook> ') ) ) {
+        next if $line =~ /^\s*$/;
         for my $host (@hosts) {
             next unless ($host);
             my $fd;
-            my @commands = split /\s+/, App::Pawn::Rule::command();
-            for my $command (@commands) {
-                next unless ($command);
-                open $fd, '-|', "ssh $host $command 2> /dev/null";
-                my $output;
-                {
-                    local $/ = undef;
-                    $output = <$fd>;
-                }
-                $ret{$host} = App::Pawn::Rule::eachTime()->($output);
-                close $fd;
+            open $fd, '-|', "ssh $host $line 2> /dev/null";
+            my $output;
+            {
+                local $/ = undef;
+                $output = <$fd>;
             }
+            close $fd;
+            print $out $output;
+        }
+    }
+}
+
+sub exec {
+    my $self = shift;
+    my @hosts = split /\s+/, App::Pawn::Rule::hosts();
+    my %ret;
+    for my $host (@hosts) {
+        next unless ($host);
+        my $fd;
+        my @commands = split /\s+/, App::Pawn::Rule::command();
+        for my $command (@commands) {
+            next unless ($command);
+            open $fd, '-|', "ssh $host $command 2> /dev/null";
+            my $output;
+            {
+                local $/ = undef;
+                $output = <$fd>;
+            }
+            $ret{$host} = App::Pawn::Rule::eachTime()->($output);
+            close $fd;
         }
     }
     App::Pawn::Rule::endTime()->( \%ret );
