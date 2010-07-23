@@ -86,8 +86,9 @@ sub shell {
                 local $/ = undef;
                 $output = <$fd>;
             }
+            chomp($output);
             close $fd;
-            printf $out "%s> %s", $host, $output;
+            printf $out "%s> %s\n", $host, $output;
         }
     }
 }
