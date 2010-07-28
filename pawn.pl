@@ -19,8 +19,8 @@ sub parse_options {
 
     Getopt::Long::Configure("bundling");
     Getopt::Long::GetOptions(
-        's|shell'  => \$self->{shell},
-        'h|help'   => sub { $self->help; exit },
+        's|shell' => \$self->{shell},
+        'h|help'  => sub { $self->help; exit },
     );
     $self->{argv} = \@ARGV;
 }
@@ -37,9 +37,9 @@ HELP
 }
 
 sub load_file {
-    my $self = shift;
-    my $file   = shift @{$self->{argv}};
-    my @attr   = qw( hosts commands );
+    my $self   = shift;
+    my $file   = shift @{ $self->{argv} };
+    my @attr   = qw( hosts commands copy );
     my $config = { file => $file };
 
     my $dsl = join "\n",
@@ -49,7 +49,7 @@ sub load_file {
 
 sub include {
     my \$b = shift || return;
-    my \$f = dirname(\$self->{file}) . '/' . \$b;
+    my \$f = dirname(\$file) . '/' . \$b;
     unless ( do \$f ) { die "can't include \$f\\n" }
 }
 DSL
@@ -99,21 +99,42 @@ sub exec {
     my %ret;
     for my $host (@hosts) {
         next unless ($host);
-        my $fd;
         my @doChecks = App::Pawn::Rule::commands()->();
         for my $doCheck (@doChecks) {
             my $do    = $$doCheck[0];
             my $check = $$doCheck[1];
-            open $fd, '-|', "ssh $host $do 2> /dev/null";
-            my $output;
-            {
-                local $/ = undef;
-                $output = <$fd>;
+            if ( ref($do) eq "CODE" ) {
+                $self->scp( $host, $do, $check );
             }
-            $check->($output);
-            close $fd;
+            else {
+                $self->ssh( $host, $do, $check );
+            }
         }
     }
+}
+
+sub ssh {
+    my $self = shift;
+    my ( $host, $do, $check ) = @_;
+    my $fd;
+    open $fd, '-|', "ssh $host $do 2> /dev/null";
+    my $output;
+    {
+        local $/ = undef;
+        $output = <$fd>;
+    }
+    $check->($output);
+    close $fd;
+}
+
+sub scp {
+    my $self = shift;
+    my ( $host, $do, $check ) = @_;
+    my ( $com, $opt ) = $do->();
+    $opt =~ s/HOST/$host/;
+    my @com = split /\s+/, $opt;
+    unshift @com, $com;
+    $check->( system(@com) );
 }
 
 sub doit {
