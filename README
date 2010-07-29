@@ -1,0 +1,39 @@
+
+   Pawn : Yet Another Deploy Tool
+
+I want to use a simple deploy tool, which consist of
+a file and depends on core modules. This is my solution.
+Pawn.pl reads a configuration file, recognize which
+servers to process and what commands to execute.
+
+sample configurations:
+-- ex1 --
+hosts 'host1 host2'
+commands sub {
+    (
+        [ 'hostname' => sub { print shift } ],
+        [ 'date'     => sub { print shift } ]
+    );
+};
+-- ex2 --
+include  'hosts';
+commands sub {
+    (
+        [ 'hostname' => sub { print shift } ],
+        [ 'date'     => sub { print shift } ]
+    );
+};
+-- ex3 --
+include  'hosts';
+commands sub {
+    (
+        [ 'hostname' => sub { print shift } ],
+        [  sub { 'scp' => '/etc/motd HOST:/home/daiba'}, => sub { print $_=(shift==0)? 'OK' : 'NG',"\n" } ],
+        [ 'date'     => sub { print shift } ]
+    );
+};
+
+how to run:
+$ pawn.pl commands_file
+$ pawn.pl -s commands_file # shell mode
+$ pawn.pl -h               # help
