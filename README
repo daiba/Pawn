@@ -34,8 +34,18 @@ commands sub {
         [ 'date'     => sub { print shift } ]
     );
 };
+-- ex4 --
+include  'hosts';
+commands sub {
+    (
+        [ 'hostname' => sub { print shift } ],
+        [  sub { 'scp' => 'HOST:/etc/redhat-release /Users/daiba/HOST_release'},
+           => sub { print $_=(shift==0)? 'OK' : 'NG',"\n" } ],
+        [ 'date'     => sub { print shift } ]
+    );
+};
 
 how to run:
-$ pawn.pl commands_file
+$ pawn.pl ex1              # ex1 as a configuration file above
 $ pawn.pl -s commands_file # shell mode
 $ pawn.pl -h               # help
