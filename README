@@ -23,6 +23,8 @@ commands sub {
         [ 'date'     => sub { print shift } ]
     );
 };
+-- hosts --
+hosts 'host1 host2';
 -- ex3 --
 include  'hosts';
 commands sub {
