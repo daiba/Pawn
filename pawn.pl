@@ -131,9 +131,9 @@ sub scp {
     my $self = shift;
     my ( $host, $do, $check ) = @_;
     my ( $com, $opt ) = $do->();
-    $opt =~ s/HOST/$host/;
+    $opt =~ s/HOST/$host/g;
     my @com = split /\s+/, $opt;
-    unshift @com, $com;
+    unshift @com, 'scp', '-q';
     $check->( system(@com) );
 }
 
