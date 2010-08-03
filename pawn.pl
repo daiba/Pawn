@@ -80,7 +80,7 @@ sub shell {
         for my $host (@hosts) {
             next unless ($host);
             my $fd;
-            open $fd, '-|', "ssh $host $line 2> /dev/null";
+            open $fd, '-|', "ssh -t $host $line 2> /dev/null";
             my $output;
             {
                 local $/ = undef;
