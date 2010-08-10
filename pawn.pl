@@ -39,7 +39,7 @@ HELP
 sub load_file {
     my $self   = shift;
     my $file   = shift @{ $self->{argv} };
-    my @attr   = qw( hosts commands copy );
+    my @attr   = qw( hosts commands );
     my $config = { file => $file };
 
     my $dsl = join "\n",
