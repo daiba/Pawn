@@ -44,6 +44,31 @@ commands sub {
         [ 'date'     => sub { print shift } ]
     );
 };
+-- ex5 --
+include  'hosts';
+commands sub {
+    (
+        [ 'hostname' => sub { print shift } ],
+        [  sub { 'local' => 'hostname'} => sub { print shift } ],
+        [ 'date'     => sub { print shift } ]
+    );
+};
+-- ex6 --
+include  'hosts';
+commands sub {
+    (
+        [ 'hostname' => sub { print shift } ],
+        [ 'ls AST'     => sub { print shift } ]
+    );
+};
+-- ex7 --
+include  'hosts';
+commands sub {
+    (
+        [ 'hostname' => sub { print shift } ],
+        [  sub { 'local' => 'ls AST'} => sub { print shift } ],
+    );
+};
 
 how to run:
 $ pawn.pl ex1              # ex1 as a configuration file above
