@@ -126,6 +126,7 @@ sub ssh {
     my $self = shift;
     my ( $host, $do, $check ) = @_;
     my $fd;
+    $do =~ s/AST/\\\*/g;
     open $fd, '-|', "ssh -t $host $do 2> /dev/null";
     my $output;
     {
@@ -140,6 +141,7 @@ sub scp {
     my $self = shift;
     my ( $host, $opt, $check ) = @_;
     $opt =~ s/HOST/$host/g;
+    $opt =~ s/AST/\\\*/g;
     my @com = split /\s+/, $opt;
     unshift @com, 'scp', '-q';
     $check->( system(@com) );
@@ -148,7 +150,9 @@ sub scp {
 sub onlocal {
     my $self = shift;
     my ( $opt, $check ) = @_;
+    $opt =~ s/AST/\\\*/g;
     my @com = split /\s+/, $opt;
+    unshift @com, 'sh', '-c';
     $check->( system(@com) );
 }
 
