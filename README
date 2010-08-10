@@ -30,7 +30,7 @@ include  'hosts';
 commands sub {
     (
         [ 'hostname' => sub { print shift } ],
-        [  sub { 'scp' => '/etc/motd HOST:/home/daiba'}, => sub { print $_=(shift==0)? 'OK' : 'NG',"\n" } ],
+        [  sub { 'scp' => '/etc/motd HOST:/home/daiba'} => sub { print $_=(shift==0)? 'OK' : 'NG',"\n" } ],
         [ 'date'     => sub { print shift } ]
     );
 };
