@@ -104,7 +104,16 @@ sub exec {
             my $do    = $$doCheck[0];
             my $check = $$doCheck[1];
             if ( ref($do) eq "CODE" ) {
-                $self->scp( $host, $do, $check );
+                my ( $com, $opt ) = $do->();
+                if ( $com eq 'scp' ) {
+                    $self->scp( $host, $opt, $check );
+                }
+                elsif ( $com eq 'local' ) {
+                    $self->onlocal( $opt, $check );
+                }
+                else {
+                    die "Unkown command are found.\n";
+                }
             }
             else {
                 $self->ssh( $host, $do, $check );
@@ -129,11 +138,17 @@ sub ssh {
 
 sub scp {
     my $self = shift;
-    my ( $host, $do, $check ) = @_;
-    my ( $com, $opt ) = $do->();
+    my ( $host, $opt, $check ) = @_;
     $opt =~ s/HOST/$host/g;
     my @com = split /\s+/, $opt;
     unshift @com, 'scp', '-q';
+    $check->( system(@com) );
+}
+
+sub onlocal {
+    my $self = shift;
+    my ( $opt, $check ) = @_;
+    my @com = split /\s+/, $opt;
     $check->( system(@com) );
 }
 
