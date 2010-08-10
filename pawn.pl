@@ -117,7 +117,7 @@ sub ssh {
     my $self = shift;
     my ( $host, $do, $check ) = @_;
     my $fd;
-    open $fd, '-|', "ssh $host $do 2> /dev/null";
+    open $fd, '-|', "ssh -t $host $do 2> /dev/null";
     my $output;
     {
         local $/ = undef;
